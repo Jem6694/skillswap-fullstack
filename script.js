@@ -1,160 +1,256 @@
-const api = async (url, options = {}) => {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
-  return data;
+const API = {
+  init: "/api/init",
+  demo: "/api/demo",
+  reset: "/api/reset",
+  profile: "/api/profile",
+  matches: "/api/matches",
+  requests: "/api/requests",
+  updateRequest: (id) => `/api/request/${id}`
 };
 
-const toastEl = document.getElementById('toast');
-const currentUserEl = document.getElementById('currentUser');
-const matchesEl = document.getElementById('matches');
-const requestsEl = document.getElementById('requests');
-const findMatchesBtn = document.getElementById('findMatchesBtn');
-let currentUser = null;
+let currentUserEmail = "";
 
-function toast(message) {
-  toastEl.textContent = message;
-  toastEl.classList.add('show');
-  setTimeout(() => toastEl.classList.remove('show'), 2200);
+function getProfileData() {
+  return {
+    name: document.getElementById("name").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    major: document.getElementById("major").value.trim(),
+    availability: document.getElementById("availability").value.trim(),
+    bio: document.getElementById("bio").value.trim(),
+    teach_skills: document.getElementById("teachSkills").value
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean),
+    learn_skills: document.getElementById("learnSkills").value
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+  };
 }
 
-function splitSkills(value) {
-  return value.split(',').map(s => s.trim()).filter(Boolean);
+function showEmptyState(containerId, icon, title, subtitle) {
+  const container = document.getElementById(containerId);
+  container.className = "content-area empty-state";
+  container.innerHTML = `
+    <div class="empty-icon">${icon}</div>
+    <p>${title}</p>
+    <span>${subtitle}</span>
+  `;
 }
 
-function renderPills(items) {
-  return `<div class="pill-group">${items.map(item => `<span class="pill">${item}</span>`).join('')}</div>`;
+async function initializeApp() {
+  try {
+    const res = await fetch(API.init, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to initialize app");
+    alert("App initialized successfully.");
+  } catch (err) {
+    alert("Error initializing app.");
+    console.error(err);
+  }
 }
 
-function setCurrentUser(user) {
-  currentUser = user;
-  currentUserEl.textContent = `Current user: ${user.name} (${user.email})`;
-  findMatchesBtn.classList.remove('hidden');
-  loadRequests();
+async function loadDemoData() {
+  try {
+    const res = await fetch(API.demo, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to load demo data");
+    alert("Demo data loaded.");
+    findMatches();
+    loadRequests();
+  } catch (err) {
+    alert("Error loading demo data.");
+    console.error(err);
+  }
 }
 
-async function loadMatches() {
-  if (!currentUser) return;
-  const matches = await api(`/api/matches/${currentUser.id}`);
-  if (!matches.length) {
-    matchesEl.className = 'list empty';
-    matchesEl.textContent = 'No matches found yet. Try different skills or load demo data.';
+async function resetDatabase() {
+  const confirmReset = confirm("Are you sure you want to reset the database?");
+  if (!confirmReset) return;
+
+  try {
+    const res = await fetch(API.reset, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to reset database");
+    alert("Database reset.");
+    document.getElementById("profileForm").reset();
+    currentUserEmail = "";
+    showEmptyState("matchesContainer", "🔍", "No matches yet.", "Save your profile and click “Find Matches” to get started.");
+    showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
+  } catch (err) {
+    alert("Error resetting database.");
+    console.error(err);
+  }
+}
+
+async function saveProfile() {
+  const profile = getProfileData();
+
+  if (!profile.name || !profile.email) {
+    alert("Please enter at least your name and email.");
     return;
   }
-  matchesEl.className = 'list';
-  matchesEl.innerHTML = matches.map(match => `
-    <div class="match-card">
-      <h3>${match.name}</h3>
-      <p><strong>Major:</strong> ${match.major || 'N/A'}</p>
-      <p>${match.bio || ''}</p>
-      <p><strong>They can teach you:</strong></p>
-      ${renderPills(match.they_can_teach_me.length ? match.they_can_teach_me : ['No direct overlap'])}
-      <p><strong>You can teach them:</strong></p>
-      ${renderPills(match.i_can_teach_them.length ? match.i_can_teach_them : ['No direct overlap'])}
-      <p><strong>Availability:</strong> ${match.availability || 'Not provided'}</p>
-      <p><strong>Match score:</strong> ${match.match_score}</p>
-      <button onclick="sendRequest(${match.id}, '${match.name.replace(/'/g, "\\'")}')">Send Request</button>
-    </div>
-  `).join('');
+
+  try {
+    const res = await fetch(API.profile, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile)
+    });
+
+    if (!res.ok) throw new Error("Failed to save profile");
+
+    currentUserEmail = profile.email;
+    alert("Profile saved successfully.");
+    findMatches();
+    loadRequests();
+  } catch (err) {
+    alert("Error saving profile.");
+    console.error(err);
+  }
+}
+
+async function findMatches() {
+  const profile = getProfileData();
+  const email = profile.email || currentUserEmail;
+
+  if (!email) {
+    alert("Please save your profile first.");
+    return;
+  }
+
+  currentUserEmail = email;
+
+  try {
+    const res = await fetch(`${API.matches}?email=${encodeURIComponent(email)}`);
+    if (!res.ok) throw new Error("Failed to fetch matches");
+
+    const matches = await res.json();
+    renderMatches(matches);
+  } catch (err) {
+    showEmptyState("matchesContainer", "⚠️", "Could not load matches.", "Please try again.");
+    console.error(err);
+  }
+}
+
+function renderMatches(matches) {
+  const container = document.getElementById("matchesContainer");
+  container.className = "content-area";
+
+  if (!matches || matches.length === 0) {
+    showEmptyState("matchesContainer", "🔍", "No matches yet.", "Try adding more skills or load demo data.");
+    return;
+  }
+
+  container.innerHTML = matches.map(match => {
+    const teachTags = (match.teach_skills || []).map(skill => `<span class="tag">${skill}</span>`).join("");
+    const learnTags = (match.learn_skills || []).map(skill => `<span class="tag">${skill}</span>`).join("");
+
+    return `
+      <div class="match-card">
+        <h3>${match.name || "Unnamed User"}</h3>
+        <p><strong>Major:</strong> ${match.major || "N/A"}</p>
+        <p><strong>Availability:</strong> ${match.availability || "N/A"}</p>
+        <p>${match.bio || ""}</p>
+
+        <div class="card-tags">
+          ${teachTags}
+          ${learnTags}
+        </div>
+
+        <div class="card-actions">
+          <button class="primary-btn" onclick="sendRequest('${match.email}')">Send Request</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function sendRequest(targetEmail) {
+  if (!currentUserEmail) {
+    alert("Please save your profile first.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        sender_email: currentUserEmail,
+        receiver_email: targetEmail
+      })
+    });
+
+    if (!res.ok) throw new Error("Failed to send request");
+
+    alert("Request sent.");
+    loadRequests();
+  } catch (err) {
+    alert("Error sending request.");
+    console.error(err);
+  }
 }
 
 async function loadRequests() {
-  if (!currentUser) return;
-  const requests = await api(`/api/requests/${currentUser.id}`);
-  if (!requests.length) {
-    requestsEl.className = 'list empty';
-    requestsEl.textContent = 'No requests yet.';
+  if (!currentUserEmail) return;
+
+  try {
+    const res = await fetch(`${API.requests}?email=${encodeURIComponent(currentUserEmail)}`);
+    if (!res.ok) throw new Error("Failed to load requests");
+
+    const requests = await res.json();
+    renderRequests(requests);
+  } catch (err) {
+    showEmptyState("requestsContainer", "⚠️", "Could not load requests.", "Please try again.");
+    console.error(err);
+  }
+}
+
+function renderRequests(requests) {
+  const container = document.getElementById("requestsContainer");
+  container.className = "content-area";
+
+  if (!requests || requests.length === 0) {
+    showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
     return;
   }
-  requestsEl.className = 'list';
-  requestsEl.innerHTML = requests.map(req => {
-    const incoming = req.to_user_id === currentUser.id;
-    return `
-      <div class="request-card">
-        <h3>${incoming ? 'Incoming Request' : 'Outgoing Request'}</h3>
-        <p><strong>From:</strong> ${req.from_name}</p>
-        <p><strong>To:</strong> ${req.to_name}</p>
-        <p><strong>Message:</strong> ${req.message || 'No message added'}</p>
-        <p class="status ${req.status}">Status: ${req.status}</p>
-        ${incoming && req.status === 'pending' ? `
-          <div class="inline-actions">
-            <button onclick="updateRequest(${req.id}, 'accepted')">Accept</button>
-            <button class="danger" onclick="updateRequest(${req.id}, 'declined')">Decline</button>
-          </div>` : ''}
+
+  container.innerHTML = requests.map(req => `
+    <div class="request-card">
+      <h3>${req.sender_name || req.sender_email || "Unknown Sender"}</h3>
+      <p><strong>From:</strong> ${req.sender_email || "N/A"}</p>
+      <p><strong>Status:</strong> ${req.status || "Pending"}</p>
+
+      <div class="card-actions">
+        ${req.status === "pending" ? `
+          <button class="accept-btn" onclick="updateRequestStatus(${req.id}, 'accepted')">Accept</button>
+          <button class="decline-btn" onclick="updateRequestStatus(${req.id}, 'declined')">Decline</button>
+        ` : ""}
       </div>
-    `;
-  }).join('');
+    </div>
+  `).join("");
 }
 
-async function sendRequest(toUserId, name) {
-  if (!currentUser) return toast('Create a profile first.');
-  const message = `Hi ${name}, I would love to connect for a SkillSwap session.`;
-  await api('/api/requests', {
-    method: 'POST',
-    body: JSON.stringify({
-      from_user_id: currentUser.id,
-      to_user_id: toUserId,
-      message,
-    }),
-  });
-  toast(`Request sent to ${name}`);
-  loadRequests();
+async function updateRequestStatus(requestId, status) {
+  try {
+    const res = await fetch(API.updateRequest(requestId), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    });
+
+    if (!res.ok) throw new Error("Failed to update request");
+
+    loadRequests();
+  } catch (err) {
+    alert("Error updating request.");
+    console.error(err);
+  }
 }
-window.sendRequest = sendRequest;
 
-async function updateRequest(requestId, status) {
-  await api(`/api/requests/${requestId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status }),
-  });
-  toast(`Request ${status}`);
-  loadRequests();
-}
-window.updateRequest = updateRequest;
-
-document.getElementById('initBtn').addEventListener('click', async () => {
-  await api('/api/init', { method: 'POST' });
-  toast('App initialized');
-});
-
-document.getElementById('seedBtn').addEventListener('click', async () => {
-  await api('/api/seed', { method: 'POST' });
-  toast('Demo data loaded');
-});
-
-document.getElementById('resetBtn').addEventListener('click', async () => {
-  await api('/api/reset', { method: 'POST' });
-  currentUser = null;
-  currentUserEl.textContent = '';
-  findMatchesBtn.classList.add('hidden');
-  matchesEl.className = 'list empty';
-  matchesEl.textContent = 'No matches yet.';
-  requestsEl.className = 'list empty';
-  requestsEl.textContent = 'No requests yet.';
-  toast('Database reset');
-});
-
-findMatchesBtn.addEventListener('click', loadMatches);
-
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const payload = {
-    name: document.getElementById('name').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    major: document.getElementById('major').value.trim(),
-    bio: document.getElementById('bio').value.trim(),
-    availability: document.getElementById('availability').value.trim(),
-    teach_skills: splitSkills(document.getElementById('teach_skills').value),
-    learn_skills: splitSkills(document.getElementById('learn_skills').value),
-  };
-  const user = await api('/api/users', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-  setCurrentUser(user);
-  toast('Profile saved');
-  e.target.reset();
+window.addEventListener("DOMContentLoaded", () => {
+  showEmptyState("matchesContainer", "🔍", "No matches yet.", "Save your profile and click “Find Matches” to get started.");
+  showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
 });

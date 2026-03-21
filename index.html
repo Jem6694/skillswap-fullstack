@@ -8,68 +8,141 @@
 </head>
 <body>
   <header class="hero">
-    <div class="container">
+    <div class="hero-content">
+      <div class="badge">Student Skill Exchange Platform</div>
       <h1>SkillSwap</h1>
-      <p class="tagline">Learn from students. Teach what you know. Build connections through skill exchange.</p>
+      <p>
+        Connect with students, exchange skills, and build meaningful
+        professional relationships through peer-to-peer learning.
+      </p>
+
       <div class="hero-actions">
-        <button id="initBtn">Initialize App</button>
-        <button id="seedBtn" class="secondary">Load Demo Data</button>
-        <button id="resetBtn" class="danger">Reset Database</button>
+        <button class="primary-btn" onclick="document.getElementById('profile-section').scrollIntoView({ behavior: 'smooth' })">
+          Create Profile
+        </button>
+        <button class="secondary-btn" onclick="findMatches()">
+          Find Matches
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container grid">
-    <section class="card">
-      <h2>Create Your Profile</h2>
-      <form id="profileForm">
-        <div class="field-row">
-          <div>
-            <label>Name</label>
-            <input type="text" id="name" required />
-          </div>
-          <div>
-            <label>Email</label>
-            <input type="email" id="email" required />
-          </div>
+  <main class="main-container">
+    <!-- Optional Admin / Demo Controls -->
+    <section class="admin-panel">
+      <details>
+        <summary>Demo / Admin Tools</summary>
+        <div class="admin-actions">
+          <button class="admin-btn blue-btn" onclick="initializeApp()">Initialize App</button>
+          <button class="admin-btn white-btn" onclick="loadDemoData()">Load Demo Data</button>
+          <button class="admin-btn red-btn" onclick="resetDatabase()">Reset Database</button>
         </div>
-        <div class="field-row">
-          <div>
-            <label>Major</label>
-            <input type="text" id="major" />
-          </div>
-          <div>
-            <label>Availability</label>
-            <input type="text" id="availability" placeholder="Weekends, evenings, etc." />
-          </div>
-        </div>
-        <label>Short Bio</label>
-        <textarea id="bio" rows="3"></textarea>
-
-        <label>Skills You Can Teach (comma-separated)</label>
-        <input type="text" id="teach_skills" placeholder="Python, SQL, Excel" required />
-
-        <label>Skills You Want to Learn (comma-separated)</label>
-        <input type="text" id="learn_skills" placeholder="Financial Modeling, Tableau" required />
-
-        <button type="submit">Save Profile</button>
-      </form>
-      <p id="currentUser"></p>
-      <button id="findMatchesBtn" class="hidden">Find Matches</button>
+      </details>
     </section>
 
-    <section class="card">
-      <h2>Your Matches</h2>
-      <div id="matches" class="list empty">No matches yet.</div>
-    </section>
+    <section class="dashboard-grid">
+      <!-- Profile Card -->
+      <div class="card" id="profile-section">
+        <div class="card-header">
+          <h2>👤 Create Your Profile</h2>
+          <p>Tell us what you can teach and what you want to learn.</p>
+        </div>
 
-    <section class="card">
-      <h2>Requests Dashboard</h2>
-      <div id="requests" class="list empty">No requests yet.</div>
+        <form id="profileForm" class="profile-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" placeholder="Jordan Molina" />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="jordan@uta.edu" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="major">Major</label>
+              <input type="text" id="major" placeholder="Information Systems" />
+            </div>
+
+            <div class="form-group">
+              <label for="availability">Availability</label>
+              <input type="text" id="availability" placeholder="Weekends, evenings" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="bio">Short Bio</label>
+            <textarea
+              id="bio"
+              rows="4"
+              placeholder="I’m interested in technology, finance, and helping others learn practical skills."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="teachSkills">Skills You Can Teach</label>
+            <input
+              type="text"
+              id="teachSkills"
+              placeholder="Python, SQL, Excel, Financial Modeling"
+            />
+            <small>Separate skills with commas.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="learnSkills">Skills You Want to Learn</label>
+            <input
+              type="text"
+              id="learnSkills"
+              placeholder="Tableau, Public Speaking, Interview Prep"
+            />
+            <small>Separate skills with commas.</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="primary-btn full-btn" onclick="saveProfile()">
+              Save Profile
+            </button>
+            <button type="button" class="secondary-btn full-btn" onclick="findMatches()">
+              Find Matches
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Matches Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2>🤝 Your Matches</h2>
+          <p>Students who match your skills and learning goals.</p>
+        </div>
+
+        <div id="matchesContainer" class="content-area empty-state">
+          <div class="empty-icon">🔍</div>
+          <p>No matches yet.</p>
+          <span>Save your profile and click “Find Matches” to get started.</span>
+        </div>
+      </div>
+
+      <!-- Requests Card -->
+      <div class="card requests-card">
+        <div class="card-header">
+          <h2>📨 Requests Dashboard</h2>
+          <p>Track incoming and outgoing skill exchange requests.</p>
+        </div>
+
+        <div id="requestsContainer" class="content-area empty-state">
+          <div class="empty-icon">📬</div>
+          <p>No requests yet.</p>
+          <span>Your session requests will appear here.</span>
+        </div>
+      </div>
     </section>
   </main>
 
-  <div id="toast"></div>
   <script src="script.js"></script>
 </body>
 </html>
