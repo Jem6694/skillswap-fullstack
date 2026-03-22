@@ -1,35 +1,13 @@
-const API = {
-  init: "/api/init",
-  demo: "/api/demo",
-  reset: "/api/reset",
-  profile: "/api/profile",
-  matches: "/api/matches",
-  requests: "/api/requests",
-  updateRequest: (id) => `/api/request/${id}`
-};
+let currentUser = null;
 
-let currentUserEmail = "";
-
-function getProfileData() {
-  return {
-    name: document.getElementById("name").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    major: document.getElementById("major").value.trim(),
-    availability: document.getElementById("availability").value.trim(),
-    bio: document.getElementById("bio").value.trim(),
-    teach_skills: document.getElementById("teachSkills").value
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean),
-    learn_skills: document.getElementById("learnSkills").value
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean)
-  };
+function $(id) {
+  return document.getElementById(id);
 }
 
 function showEmptyState(containerId, icon, title, subtitle) {
-  const container = document.getElementById(containerId);
+  const container = $(containerId);
+  if (!container) return;
+
   container.className = "content-area empty-state";
   container.innerHTML = `
     <div class="empty-icon">${icon}</div>
@@ -38,219 +16,313 @@ function showEmptyState(containerId, icon, title, subtitle) {
   `;
 }
 
+function getProfileData() {
+  return {
+    name: $("name")?.value.trim() || "",
+    email: $("email")?.value.trim() || "",
+    major: $("major")?.value.trim() || "",
+    availability: $("availability")?.value.trim() || "",
+    bio: $("bio")?.value.trim() || "",
+    teach_skills: ($("teachSkills")?.value || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean),
+    learn_skills: ($("learnSkills")?.value || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+  };
+}
+
 async function initializeApp() {
   try {
-    const res = await fetch(API.init, { method: "POST" });
-    if (!res.ok) throw new Error("Failed to initialize app");
+    const res = await fetch("/api/init", { method: "POST" });
+    if (!res.ok) throw new Error("Init failed");
     alert("App initialized successfully.");
   } catch (err) {
-    alert("Error initializing app.");
     console.error(err);
+    alert("Error initializing app.");
   }
 }
 
 async function loadDemoData() {
   try {
-    const res = await fetch(API.demo, { method: "POST" });
-    if (!res.ok) throw new Error("Failed to load demo data");
+    const res = await fetch("/api/seed", { method: "POST" });
+    if (!res.ok) throw new Error("Seed failed");
     alert("Demo data loaded.");
-    findMatches();
-    loadRequests();
+
+    if (currentUser?.id) {
+      await findMatches();
+      await loadRequests();
+    }
   } catch (err) {
-    alert("Error loading demo data.");
     console.error(err);
+    alert("Error loading demo data.");
   }
 }
 
 async function resetDatabase() {
-  const confirmReset = confirm("Are you sure you want to reset the database?");
-  if (!confirmReset) return;
+  const confirmed = confirm("Are you sure you want to reset the database?");
+  if (!confirmed) return;
 
   try {
-    const res = await fetch(API.reset, { method: "POST" });
-    if (!res.ok) throw new Error("Failed to reset database");
+    const res = await fetch("/api/reset", { method: "POST" });
+    if (!res.ok) throw new Error("Reset failed");
+
+    if ($("profileForm")) $("profileForm").reset();
+    currentUser = null;
+
+    showEmptyState(
+      "matchesContainer",
+      "🔍",
+      "No matches yet.",
+      "Save your profile and click Find Matches."
+    );
+    showEmptyState(
+      "requestsContainer",
+      "📬",
+      "No requests yet.",
+      "Your requests will appear here."
+    );
+
     alert("Database reset.");
-    document.getElementById("profileForm").reset();
-    currentUserEmail = "";
-    showEmptyState("matchesContainer", "🔍", "No matches yet.", "Save your profile and click “Find Matches” to get started.");
-    showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
   } catch (err) {
-    alert("Error resetting database.");
     console.error(err);
+    alert("Error resetting database.");
   }
 }
 
 async function saveProfile() {
   const profile = getProfileData();
 
-  if (!profile.name || !profile.email) {
-    alert("Please enter at least your name and email.");
+  if (!profile.name || !profile.email || !profile.teach_skills.length || !profile.learn_skills.length) {
+    alert("Please fill in name, email, teach skills, and learn skills.");
     return;
   }
 
   try {
-    const res = await fetch(API.profile, {
+    const res = await fetch("/api/users", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(profile)
     });
 
-    if (!res.ok) throw new Error("Failed to save profile");
+    const data = await res.json();
 
-    currentUserEmail = profile.email;
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to save profile");
+    }
+
+    currentUser = data;
     alert("Profile saved successfully.");
-    findMatches();
-    loadRequests();
+
+    await findMatches();
+    await loadRequests();
   } catch (err) {
-    alert("Error saving profile.");
     console.error(err);
+    alert(err.message || "Error saving profile.");
   }
 }
 
 async function findMatches() {
-  const profile = getProfileData();
-  const email = profile.email || currentUserEmail;
-
-  if (!email) {
+  if (!currentUser?.id) {
     alert("Please save your profile first.");
     return;
   }
 
-  currentUserEmail = email;
-
   try {
-    const res = await fetch(`${API.matches}?email=${encodeURIComponent(email)}`);
-    if (!res.ok) throw new Error("Failed to fetch matches");
-
+    const res = await fetch(`/api/matches/${currentUser.id}`);
     const matches = await res.json();
+
+    if (!res.ok) {
+      throw new Error(matches.error || "Failed to load matches");
+    }
+
     renderMatches(matches);
   } catch (err) {
-    showEmptyState("matchesContainer", "⚠️", "Could not load matches.", "Please try again.");
     console.error(err);
+    showEmptyState(
+      "matchesContainer",
+      "⚠️",
+      "Could not load matches.",
+      "Please try again."
+    );
   }
 }
 
 function renderMatches(matches) {
-  const container = document.getElementById("matchesContainer");
+  const container = $("matchesContainer");
+  if (!container) return;
+
   container.className = "content-area";
 
   if (!matches || matches.length === 0) {
-    showEmptyState("matchesContainer", "🔍", "No matches yet.", "Try adding more skills or load demo data.");
+    showEmptyState(
+      "matchesContainer",
+      "🔍",
+      "No matches yet.",
+      "Try loading demo data or adding more skills."
+    );
     return;
   }
 
   container.innerHTML = matches.map(match => {
-    const teachTags = (match.teach_skills || []).map(skill => `<span class="tag">${skill}</span>`).join("");
-    const learnTags = (match.learn_skills || []).map(skill => `<span class="tag">${skill}</span>`).join("");
+    const teachMeTags = (match.they_can_teach_me || [])
+      .map(skill => `<span class="tag">Can teach you: ${skill}</span>`)
+      .join("");
+
+    const iTeachThemTags = (match.i_can_teach_them || [])
+      .map(skill => `<span class="tag">You can teach: ${skill}</span>`)
+      .join("");
 
     return `
       <div class="match-card">
-        <h3>${match.name || "Unnamed User"}</h3>
+        <h3>${match.name}</h3>
+        <p><strong>Email:</strong> ${match.email}</p>
         <p><strong>Major:</strong> ${match.major || "N/A"}</p>
         <p><strong>Availability:</strong> ${match.availability || "N/A"}</p>
         <p>${match.bio || ""}</p>
-
         <div class="card-tags">
-          ${teachTags}
-          ${learnTags}
+          ${teachMeTags}
+          ${iTeachThemTags}
         </div>
-
         <div class="card-actions">
-          <button class="primary-btn" onclick="sendRequest('${match.email}')">Send Request</button>
+          <button class="primary-btn" onclick="sendRequest(${match.id})">Send Request</button>
         </div>
       </div>
     `;
   }).join("");
 }
 
-async function sendRequest(targetEmail) {
-  if (!currentUserEmail) {
+async function sendRequest(toUserId) {
+  if (!currentUser?.id) {
     alert("Please save your profile first.");
     return;
   }
 
   try {
-    const res = await fetch("/api/request", {
+    const res = await fetch("/api/requests", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        sender_email: currentUserEmail,
-        receiver_email: targetEmail
+        from_user_id: currentUser.id,
+        to_user_id: toUserId,
+        message: "I'd like to connect for a SkillSwap session."
       })
     });
 
-    if (!res.ok) throw new Error("Failed to send request");
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to send request");
+    }
 
     alert("Request sent.");
-    loadRequests();
+    await loadRequests();
   } catch (err) {
-    alert("Error sending request.");
     console.error(err);
+    alert(err.message || "Error sending request.");
   }
 }
 
 async function loadRequests() {
-  if (!currentUserEmail) return;
+  if (!currentUser?.id) return;
 
   try {
-    const res = await fetch(`${API.requests}?email=${encodeURIComponent(currentUserEmail)}`);
-    if (!res.ok) throw new Error("Failed to load requests");
-
+    const res = await fetch(`/api/requests/${currentUser.id}`);
     const requests = await res.json();
+
+    if (!res.ok) {
+      throw new Error("Failed to load requests");
+    }
+
     renderRequests(requests);
   } catch (err) {
-    showEmptyState("requestsContainer", "⚠️", "Could not load requests.", "Please try again.");
     console.error(err);
+    showEmptyState(
+      "requestsContainer",
+      "⚠️",
+      "Could not load requests.",
+      "Please try again."
+    );
   }
 }
 
 function renderRequests(requests) {
-  const container = document.getElementById("requestsContainer");
+  const container = $("requestsContainer");
+  if (!container) return;
+
   container.className = "content-area";
 
   if (!requests || requests.length === 0) {
-    showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
+    showEmptyState(
+      "requestsContainer",
+      "📬",
+      "No requests yet.",
+      "Your requests will appear here."
+    );
     return;
   }
 
-  container.innerHTML = requests.map(req => `
-    <div class="request-card">
-      <h3>${req.sender_name || req.sender_email || "Unknown Sender"}</h3>
-      <p><strong>From:</strong> ${req.sender_email || "N/A"}</p>
-      <p><strong>Status:</strong> ${req.status || "Pending"}</p>
+  container.innerHTML = requests.map(req => {
+    const isIncoming = req.to_user_id === currentUser.id;
+    const otherName = isIncoming ? req.from_name : req.to_name;
 
-      <div class="card-actions">
-        ${req.status === "pending" ? `
-          <button class="accept-btn" onclick="updateRequestStatus(${req.id}, 'accepted')">Accept</button>
-          <button class="decline-btn" onclick="updateRequestStatus(${req.id}, 'declined')">Decline</button>
-        ` : ""}
+    return `
+      <div class="request-card">
+        <h3>${otherName}</h3>
+        <p><strong>Type:</strong> ${isIncoming ? "Incoming" : "Outgoing"}</p>
+        <p><strong>Status:</strong> ${req.status}</p>
+        <p><strong>Message:</strong> ${req.message || "No message"}</p>
+        <div class="card-actions">
+          ${isIncoming && req.status === "pending" ? `
+            <button class="accept-btn" onclick="updateRequestStatus(${req.id}, 'accepted')">Accept</button>
+            <button class="decline-btn" onclick="updateRequestStatus(${req.id}, 'declined')">Decline</button>
+          ` : ""}
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 async function updateRequestStatus(requestId, status) {
   try {
-    const res = await fetch(API.updateRequest(requestId), {
-      method: "PUT",
+    const res = await fetch(`/api/requests/${requestId}`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ status })
     });
 
-    if (!res.ok) throw new Error("Failed to update request");
+    const data = await res.json();
 
-    loadRequests();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to update request");
+    }
+
+    await loadRequests();
   } catch (err) {
-    alert("Error updating request.");
     console.error(err);
+    alert(err.message || "Error updating request.");
   }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  showEmptyState("matchesContainer", "🔍", "No matches yet.", "Save your profile and click “Find Matches” to get started.");
-  showEmptyState("requestsContainer", "📬", "No requests yet.", "Your session requests will appear here.");
+  showEmptyState(
+    "matchesContainer",
+    "🔍",
+    "No matches yet.",
+    "Save your profile and click Find Matches."
+  );
+  showEmptyState(
+    "requestsContainer",
+    "📬",
+    "No requests yet.",
+    "Your requests will appear here."
+  );
 });
