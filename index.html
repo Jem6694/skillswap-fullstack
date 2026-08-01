@@ -2,146 +2,834 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkillSwap</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <meta
+    name="description"
+    content="SkillSwap connects college students with peers, faculty, clubs, and campus resources based on their skills and interests."
+  />
+
+  <title>SkillSwap | Learn, Connect, Grow</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <header class="hero">
-    <div class="hero-content">
-      <div class="badge">Student Skill Exchange Platform</div>
-      <h1>SkillSwap</h1>
-      <p>
-        Connect with students, exchange skills, and build meaningful
-        professional relationships through peer-to-peer learning.
-      </p>
 
-      <div class="hero-actions">
-        <button class="primary-btn" onclick="document.getElementById('profile-section').scrollIntoView({ behavior: 'smooth' })">
+<body>
+  <!-- NAVIGATION -->
+  <header class="site-header">
+    <nav class="navbar" aria-label="Main navigation">
+      <a href="#home" class="brand" aria-label="SkillSwap home">
+        <span class="brand-mark">S</span>
+
+        <span class="brand-text">
+          <strong>SkillSwap</strong>
+          <small>Campus Learning Network</small>
+        </span>
+      </a>
+
+      <button
+        id="mobileMenuButton"
+        class="mobile-menu-button"
+        type="button"
+        aria-label="Open navigation menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <div id="navLinks" class="nav-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#platform">Platform</a>
+        <a href="#profile-section">Find Connections</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+
+        <button
+          type="button"
+          class="nav-cta"
+          onclick="document
+            .getElementById('profile-section')
+            .scrollIntoView({ behavior: 'smooth' })"
+        >
           Create Profile
         </button>
-        <button class="secondary-btn" onclick="findMatches()">
-          Find Matches
-        </button>
       </div>
-    </div>
+    </nav>
   </header>
 
-  <main class="main-container">
-    <!-- Optional Admin / Demo Controls -->
-    <section class="admin-panel">
-      <details>
-        <summary>Demo / Admin Tools</summary>
-        <div class="admin-actions">
-          <button class="admin-btn blue-btn" onclick="initializeApp()">Initialize App</button>
-          <button class="admin-btn white-btn" onclick="loadDemoData()">Load Demo Data</button>
-          <button class="admin-btn red-btn" onclick="resetDatabase()">Reset Database</button>
+  <main>
+    <!-- HERO -->
+    <section id="home" class="hero-section">
+      <div class="hero-background-shape hero-shape-one"></div>
+      <div class="hero-background-shape hero-shape-two"></div>
+
+      <div class="section-container hero-layout">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            Student-built campus engagement platform
+          </div>
+
+          <h1>
+            Learn from your campus.
+            <span>Build connections that matter.</span>
+          </h1>
+
+          <p class="hero-description">
+            SkillSwap helps college students discover people who can
+            teach the skills they want to learn, connect with relevant
+            faculty, explore student organizations, and find useful
+            campus resources.
+          </p>
+
+          <div class="hero-actions">
+            <button
+              type="button"
+              class="primary-btn large-btn"
+              onclick="document
+                .getElementById('profile-section')
+                .scrollIntoView({ behavior: 'smooth' })"
+            >
+              Build Your Profile
+            </button>
+
+            <button
+              type="button"
+              class="secondary-btn large-btn"
+              onclick="document
+                .getElementById('how-it-works')
+                .scrollIntoView({ behavior: 'smooth' })"
+            >
+              See How It Works
+            </button>
+          </div>
+
+          <div class="hero-trust-row">
+            <div>
+              <strong>Peer learning</strong>
+              <span>Exchange practical knowledge</span>
+            </div>
+
+            <div>
+              <strong>Smart recommendations</strong>
+              <span>Find compatible connections</span>
+            </div>
+
+            <div>
+              <strong>Campus involvement</strong>
+              <span>Discover clubs and resources</span>
+            </div>
+          </div>
         </div>
-      </details>
+
+        <div class="hero-preview" aria-label="SkillSwap preview">
+          <div class="preview-topbar">
+            <div>
+              <span class="preview-label">Your SkillSwap dashboard</span>
+              <h2>Good evening, Jordan</h2>
+            </div>
+
+            <span class="profile-completion">75% complete</span>
+          </div>
+
+          <div class="preview-summary-grid">
+            <article class="preview-summary-card">
+              <span class="summary-icon">01</span>
+              <div>
+                <strong>Student Matches</strong>
+                <p>Connect through shared learning goals.</p>
+              </div>
+            </article>
+
+            <article class="preview-summary-card">
+              <span class="summary-icon">02</span>
+              <div>
+                <strong>Faculty Experts</strong>
+                <p>Discover professors by topic and expertise.</p>
+              </div>
+            </article>
+
+            <article class="preview-summary-card">
+              <span class="summary-icon">03</span>
+              <div>
+                <strong>Recommended Clubs</strong>
+                <p>Find organizations aligned with your interests.</p>
+              </div>
+            </article>
+          </div>
+
+          <div class="preview-recommendation">
+            <div class="avatar">MS</div>
+
+            <div class="recommendation-copy">
+              <span>Top peer recommendation</span>
+              <strong>Maya Singh</strong>
+              <p>Finance · Excel · Financial Modeling</p>
+            </div>
+
+            <span class="match-score">86%</span>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="dashboard-grid">
-      <!-- Profile Card -->
-      <div class="card" id="profile-section">
-        <div class="card-header">
-          <h2>👤 Create Your Profile</h2>
-          <p>Tell us what you can teach and what you want to learn.</p>
-        </div>
+    <!-- BENEFITS -->
+    <section class="benefits-section">
+      <div class="section-container">
+        <div class="benefits-grid">
+          <article class="benefit-card">
+            <span class="feature-number">01</span>
+            <h3>Learn from students</h3>
+            <p>
+              Find students who can explain difficult topics, teach
+              practical skills, or help you explore a new subject.
+            </p>
+          </article>
 
-        <form id="profileForm" class="profile-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" placeholder="Jordan Molina" />
-            </div>
+          <article class="benefit-card">
+            <span class="feature-number">02</span>
+            <h3>Meet relevant faculty</h3>
+            <p>
+              Discover professors whose courses, research, and expertise
+              align with the subjects you want to understand.
+            </p>
+          </article>
 
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" placeholder="jordan@uta.edu" />
-            </div>
-          </div>
+          <article class="benefit-card">
+            <span class="feature-number">03</span>
+            <h3>Discover organizations</h3>
+            <p>
+              Receive club recommendations based on your major,
+              interests, goals, and skills you want to develop.
+            </p>
+          </article>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="major">Major</label>
-              <input type="text" id="major" placeholder="Information Systems" />
-            </div>
-
-            <div class="form-group">
-              <label for="availability">Availability</label>
-              <input type="text" id="availability" placeholder="Weekends, evenings" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="bio">Short Bio</label>
-            <textarea
-              id="bio"
-              rows="4"
-              placeholder="I’m interested in technology, finance, and helping others learn practical skills."
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="teachSkills">Skills You Can Teach</label>
-            <input
-              type="text"
-              id="teachSkills"
-              placeholder="Python, SQL, Excel, Financial Modeling"
-            />
-            <small>Separate skills with commas.</small>
-          </div>
-
-          <div class="form-group">
-            <label for="learnSkills">Skills You Want to Learn</label>
-            <input
-              type="text"
-              id="learnSkills"
-              placeholder="Tableau, Public Speaking, Interview Prep"
-            />
-            <small>Separate skills with commas.</small>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="primary-btn full-btn" onclick="saveProfile()">
-              Save Profile
-            </button>
-            <button type="button" class="secondary-btn full-btn" onclick="findMatches()">
-              Find Matches
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Matches Card -->
-      <div class="card">
-        <div class="card-header">
-          <h2>🤝 Your Matches</h2>
-          <p>Students who match your skills and learning goals.</p>
-        </div>
-
-        <div id="matchesContainer" class="content-area empty-state">
-          <div class="empty-icon">🔍</div>
-          <p>No matches yet.</p>
-          <span>Save your profile and click “Find Matches” to get started.</span>
+          <article class="benefit-card">
+            <span class="feature-number">04</span>
+            <h3>Build your network</h3>
+            <p>
+              Form meaningful campus connections that support academic,
+              professional, and personal growth.
+            </p>
+          </article>
         </div>
       </div>
+    </section>
 
-      <!-- Requests Card -->
-      <div class="card requests-card">
-        <div class="card-header">
-          <h2>📨 Requests Dashboard</h2>
-          <p>Track incoming and outgoing skill exchange requests.</p>
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="how-section">
+      <div class="section-container">
+        <div class="section-heading centered-heading">
+          <span class="section-kicker">Getting started</span>
+          <h2>Your next connection is four steps away</h2>
+          <p>
+            SkillSwap is designed to be useful even for students who are
+            completely new to the platform.
+          </p>
         </div>
 
-        <div id="requestsContainer" class="content-area empty-state">
-          <div class="empty-icon">📬</div>
-          <p>No requests yet.</p>
-          <span>Your session requests will appear here.</span>
+        <div class="steps-grid">
+          <article class="step-card">
+            <span class="step-number">1</span>
+            <h3>Create your profile</h3>
+            <p>
+              Add your major, interests, availability, and a short
+              introduction.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-number">2</span>
+            <h3>Select your skills</h3>
+            <p>
+              Tell SkillSwap what you can teach and what you are eager
+              to learn.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-number">3</span>
+            <h3>Review recommendations</h3>
+            <p>
+              Explore compatible students and, eventually, faculty and
+              club recommendations.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-number">4</span>
+            <h3>Connect and grow</h3>
+            <p>
+              Send a request, plan a learning session, and expand your
+              campus network.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORM ROLES -->
+    <section id="platform" class="platform-section">
+      <div class="section-container">
+        <div class="section-heading">
+          <span class="section-kicker">One connected campus</span>
+          <h2>Designed for the entire university community</h2>
+          <p>
+            SkillSwap will support different account types while keeping
+            each user’s experience focused and easy to understand.
+          </p>
+        </div>
+
+        <div class="role-grid">
+          <article class="role-card active-role-card">
+            <span class="role-status available-status">
+              Available now
+            </span>
+
+            <div class="role-icon">ST</div>
+
+            <h3>Students</h3>
+
+            <p>
+              Exchange skills, discover learning partners, manage
+              requests, and build meaningful campus connections.
+            </p>
+
+            <ul>
+              <li>AI-assisted student matching</li>
+              <li>Teaching and learning profiles</li>
+              <li>Connection request dashboard</li>
+            </ul>
+
+            <button
+              type="button"
+              class="text-link-button"
+              onclick="document
+                .getElementById('profile-section')
+                .scrollIntoView({ behavior: 'smooth' })"
+            >
+              Create a student profile →
+            </button>
+          </article>
+
+          <article class="role-card">
+            <span class="role-status planned-status">
+              Planned feature
+            </span>
+
+            <div class="role-icon">FA</div>
+
+            <h3>Faculty and mentors</h3>
+
+            <p>
+              Help students discover relevant expertise, research areas,
+              courses, office hours, and mentorship opportunities.
+            </p>
+
+            <ul>
+              <li>Verified faculty profiles</li>
+              <li>Expertise and research tags</li>
+              <li>Opt-in student contact settings</li>
+            </ul>
+          </article>
+
+          <article class="role-card">
+            <span class="role-status planned-status">
+              Planned feature
+            </span>
+
+            <div class="role-icon">CL</div>
+
+            <h3>Student organizations</h3>
+
+            <p>
+              Help clubs explain their purpose, advertise events, and
+              reach students whose interests align with the organization.
+            </p>
+
+            <ul>
+              <li>Personalized club recommendations</li>
+              <li>Organization profiles and events</li>
+              <li>Membership and contact information</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKING DASHBOARD -->
+    <section id="dashboard" class="dashboard-section">
+      <div class="section-container">
+        <div class="section-heading dashboard-heading">
+          <div>
+            <span class="section-kicker">Student dashboard</span>
+            <h2>Start building your SkillSwap network</h2>
+          </div>
+
+          <p>
+            Complete your profile to receive AI-assisted peer
+            recommendations based on teaching and learning compatibility.
+          </p>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- PROFILE -->
+          <article id="profile-section" class="dashboard-card profile-card">
+            <div class="card-heading-row">
+              <div>
+                <span class="card-label">Step 1</span>
+                <h3>Create your profile</h3>
+                <p>
+                  Tell the community what you know and what you want to
+                  learn.
+                </p>
+              </div>
+
+              <span class="card-badge">Required</span>
+            </div>
+
+            <form id="profileForm" class="profile-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="name">Full name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    autocomplete="name"
+                    placeholder="Jordan Molina"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="email">University email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    autocomplete="email"
+                    placeholder="jordan@university.edu"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="major">Major</label>
+                  <input
+                    type="text"
+                    id="major"
+                    placeholder="Information Systems"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="availability">Availability</label>
+                  <input
+                    type="text"
+                    id="availability"
+                    placeholder="Weekday evenings"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="bio">About you</label>
+                <textarea
+                  id="bio"
+                  rows="4"
+                  placeholder="Share your academic interests, goals, and the type of learning connections you want to make."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="teachSkills">Skills you can teach</label>
+
+                <input
+                  type="text"
+                  id="teachSkills"
+                  placeholder="Python, SQL, Excel, public speaking"
+                />
+
+                <small>
+                  Separate each skill with a comma.
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="learnSkills">
+                  Skills you want to learn
+                </label>
+
+                <input
+                  type="text"
+                  id="learnSkills"
+                  placeholder="Tableau, financial modeling, interview preparation"
+                />
+
+                <small>
+                  Add academic, professional, creative, or practical
+                  skills.
+                </small>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="primary-btn full-btn"
+                  onclick="saveProfile()"
+                >
+                  Save Profile
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary-btn full-btn"
+                  onclick="findMatches()"
+                >
+                  Find Matches
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <!-- MATCHES -->
+          <article class="dashboard-card matches-card">
+            <div class="card-heading-row">
+              <div>
+                <span class="card-label">Step 2</span>
+                <h3>Your recommended students</h3>
+                <p>
+                  Matches are ranked using your teaching and learning
+                  compatibility.
+                </p>
+              </div>
+
+              <span class="card-badge ai-badge">
+                AI assisted
+              </span>
+            </div>
+
+            <div
+              id="matchesContainer"
+              class="content-area empty-state"
+              aria-live="polite"
+            >
+              <div class="empty-icon">01</div>
+              <p>No recommendations yet</p>
+              <span>
+                Save your profile and select Find Matches to begin.
+              </span>
+            </div>
+          </article>
+
+          <!-- REQUESTS -->
+          <article class="dashboard-card requests-card">
+            <div class="card-heading-row">
+              <div>
+                <span class="card-label">Step 3</span>
+                <h3>Connection requests</h3>
+                <p>
+                  Manage incoming and outgoing learning requests.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="refresh-button"
+                onclick="loadRequests()"
+              >
+                Refresh
+              </button>
+            </div>
+
+            <div
+              id="requestsContainer"
+              class="content-area empty-state compact-empty-state"
+              aria-live="polite"
+            >
+              <div class="empty-icon">02</div>
+              <p>No requests yet</p>
+              <span>
+                Requests will appear after you connect with another
+                student.
+              </span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUTURE RECOMMENDATIONS -->
+    <section class="recommendations-section">
+      <div class="section-container">
+        <div class="section-heading centered-heading">
+          <span class="section-kicker">Expanding SkillSwap</span>
+          <h2>More than student-to-student matching</h2>
+          <p>
+            Future recommendations will help students identify people,
+            organizations, and campus opportunities relevant to their
+            goals.
+          </p>
+        </div>
+
+        <div class="future-grid">
+          <article class="future-card">
+            <span class="future-card-label">Faculty discovery</span>
+
+            <h3>Find professors by expertise</h3>
+
+            <p>
+              Search for professors whose courses, research interests,
+              or professional knowledge align with the skills you want
+              to develop.
+            </p>
+
+            <div class="future-example">
+              <div class="avatar faculty-avatar">DR</div>
+
+              <div>
+                <strong>Relevant faculty example</strong>
+                <span>
+                  Cloud computing · Cybersecurity · Networks
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <article class="future-card">
+            <span class="future-card-label">Club discovery</span>
+
+            <h3>Find your campus community</h3>
+
+            <p>
+              Receive student organization recommendations based on your
+              major, interests, career goals, and desired skills.
+            </p>
+
+            <div class="future-example">
+              <div class="avatar club-avatar">CS</div>
+
+              <div>
+                <strong>Recommended organization</strong>
+                <span>
+                  Technology · Careers · Community
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <article class="future-card">
+            <span class="future-card-label">Resource discovery</span>
+
+            <h3>Know where to get help</h3>
+
+            <p>
+              Explore academic, career, involvement, financial, and
+              wellness resources through one organized student hub.
+            </p>
+
+            <div class="future-example">
+              <div class="avatar resource-avatar">CR</div>
+
+              <div>
+                <strong>Suggested campus resource</strong>
+                <span>
+                  Tutoring · Career support · Advising
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="about-section">
+      <div class="section-container about-layout">
+        <div class="about-copy">
+          <span class="section-kicker">Why SkillSwap exists</span>
+
+          <h2>
+            Students should not have to navigate college alone.
+          </h2>
+
+          <p>
+            Many students want to learn skills outside their courses,
+            meet people with similar goals, and become more involved on
+            campus—but they may not know where to begin.
+          </p>
+
+          <p>
+            SkillSwap was created to make peer learning, faculty
+            discovery, networking, club involvement, and campus
+            resources easier to find through one personalized platform.
+          </p>
+        </div>
+
+        <aside class="mission-card">
+          <span>Our mission</span>
+
+          <blockquote>
+            Make campus knowledge and opportunity easier for every
+            student to discover.
+          </blockquote>
+
+          <p>
+            SkillSwap is currently a student-built prototype and is not
+            presented as an official university system.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq-section">
+      <div class="section-container faq-layout">
+        <div class="section-heading faq-heading">
+          <span class="section-kicker">Frequently asked questions</span>
+          <h2>New to SkillSwap?</h2>
+          <p>
+            These answers explain how the current prototype works and
+            what students can expect.
+          </p>
+        </div>
+
+        <div class="faq-list">
+          <details>
+            <summary>What does the AI match percentage mean?</summary>
+            <p>
+              It estimates how closely one student’s teaching skills
+              align with another student’s learning goals. It is a
+              recommendation, not a guarantee of a successful
+              connection.
+            </p>
+          </details>
+
+          <details>
+            <summary>Is SkillSwap a tutoring service?</summary>
+            <p>
+              SkillSwap supports peer learning and networking. It does
+              not replace official tutoring, advising, or academic
+              support services.
+            </p>
+          </details>
+
+          <details>
+            <summary>How will professors be included?</summary>
+            <p>
+              Faculty profiles would be opt-in or university-approved
+              and could display public expertise, courses, research
+              interests, office hours, and preferred contact methods.
+            </p>
+          </details>
+
+          <details>
+            <summary>How will club recommendations work?</summary>
+            <p>
+              Recommendations will compare a student’s major, interests,
+              goals, and desired skills with the focus and activities of
+              participating organizations.
+            </p>
+          </details>
+
+          <details>
+            <summary>Does SkillSwap access grades or private records?</summary>
+            <p>
+              The current prototype does not access grades, course
+              records, or private university accounts. Any future
+              institutional integration would require university
+              approval and appropriate privacy protections.
+            </p>
+          </details>
+
+          <details>
+            <summary>Can students add any skill?</summary>
+            <p>
+              Yes. The current system accepts comma-separated skills.
+              A future version will offer searchable skill categories
+              while continuing to support custom entries.
+            </p>
+          </details>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="section-container footer-grid">
+      <div>
+        <a href="#home" class="brand footer-brand">
+          <span class="brand-mark">S</span>
+
+          <span class="brand-text">
+            <strong>SkillSwap</strong>
+            <small>Campus Learning Network</small>
+          </span>
+        </a>
+
+        <p>
+          Learn together. Build connections. Grow beyond the classroom.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#platform">Platform</a>
+        <a href="#profile-section">Student Dashboard</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </div>
+
+      <div class="footer-note">
+        <strong>Student-built prototype</strong>
+        <span>
+          SkillSwap is not currently an official university platform.
+        </span>
+      </div>
+    </div>
+
+    <!-- DEMO CONTROLS -->
+    <div class="section-container admin-panel">
+      <details>
+        <summary>Developer and demonstration tools</summary>
+
+        <div class="admin-actions">
+          <button
+            type="button"
+            class="admin-btn"
+            onclick="initializeApp()"
+          >
+            Initialize App
+          </button>
+
+          <button
+            type="button"
+            class="admin-btn"
+            onclick="loadDemoData()"
+          >
+            Load Demo Data
+          </button>
+
+          <button
+            type="button"
+            class="admin-btn danger-btn"
+            onclick="resetDatabase()"
+          >
+            Reset Database
+          </button>
+        </div>
+      </details>
+    </div>
+
+    <div class="footer-bottom">
+      <span>
+        © 2026 SkillSwap. Built to improve student learning and campus
+        engagement.
+      </span>
+    </div>
+  </footer>
 
   <script src="script.js"></script>
 </body>
