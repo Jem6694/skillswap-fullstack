@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 import json
 from pathlib import Path
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / 'skillswap.db'
@@ -56,6 +58,32 @@ def parse_skills(raw):
 
 def normalize(skills):
     return {s.strip().lower() for s in skills if s.strip()}
+
+def calculate_skill_similarity(skills_a, skills_b):
+    """Calculate TF-IDF cosine similarity between two skill lists."""
+    text_a = " ".join(skills_a).strip()
+    text_b = " ".join(skills_b).strip()
+
+    if not text_a or not text_b:
+        return 0.0
+
+    try:
+        vectorizer = TfidfVectorizer(
+            lowercase=True,
+            ngram_range=(1, 2)
+        )
+
+        vectors = vectorizer.fit_transform([text_a, text_b])
+
+        similarity = cosine_similarity(
+            vectors[0:1],
+            vectors[1:2]
+        )[0][0]
+
+        return float(similarity)
+
+    except ValueError:
+        return 0.0
 
 
 def user_to_dict(row):
@@ -205,7 +233,12 @@ def create_user():
 def get_matches(user_id):
     init_db()
     conn = get_conn()
-    current = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+
+    current = conn.execute(
+        'SELECT * FROM users WHERE id = ?',
+        (user_id,)
+    ).fetchone()
+
     if not current:
         conn.close()
         return jsonify({'error': 'User not found'}), 404
@@ -214,22 +247,60 @@ def get_matches(user_id):
     current_teach = normalize(current_user['teach_skills'])
     current_learn = normalize(current_user['learn_skills'])
 
-    other_rows = conn.execute('SELECT * FROM users WHERE id != ?', (user_id,)).fetchall()
+    other_rows = conn.execute(
+        'SELECT * FROM users WHERE id != ?',
+        (user_id,)
+    ).fetchall()
+
     matches = []
+
     for row in other_rows:
         other = user_to_dict(row)
+
         other_teach = normalize(other['teach_skills'])
         other_learn = normalize(other['learn_skills'])
-        they_can_teach_me = sorted(current_learn.intersection(other_teach))
-        i_can_teach_them = sorted(current_teach.intersection(other_learn))
-        score = len(they_can_teach_me) + len(i_can_teach_them)
-        if score > 0:
+
+        # Exact overlaps displayed on each match card
+        they_can_teach_me = sorted(
+            current_learn.intersection(other_teach)
+        )
+
+        i_can_teach_them = sorted(
+            current_teach.intersection(other_learn)
+        )
+
+        # Compare what the current user wants to learn
+        # with what the other person can teach
+        learning_similarity = calculate_skill_similarity(
+            current_user['learn_skills'],
+            other['teach_skills']
+        )
+
+        # Compare what the current user can teach
+        # with what the other person wants to learn
+        teaching_similarity = calculate_skill_similarity(
+            current_user['teach_skills'],
+            other['learn_skills']
+        )
+
+        match_percentage = round(
+            ((learning_similarity + teaching_similarity) / 2) * 100,
+            1
+        )
+
+        if match_percentage > 0:
             other['they_can_teach_me'] = they_can_teach_me
             other['i_can_teach_them'] = i_can_teach_them
-            other['match_score'] = score
+            other['match_score'] = match_percentage
             matches.append(other)
 
-    matches.sort(key=lambda x: (-x['match_score'], x['name']))
+    matches.sort(
+        key=lambda match: (
+            -match['match_score'],
+            match['name']
+        )
+    )
+
     conn.close()
     return jsonify(matches)
 

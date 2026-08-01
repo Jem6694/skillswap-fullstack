@@ -180,6 +180,7 @@ function renderMatches(matches) {
     return `
       <div class="match-card">
         <h3>${match.name}</h3>
+        <p><strong>AI Match:</strong> ${match.match_score}%</p>
         <p><strong>Email:</strong> ${match.email}</p>
         <p><strong>Major:</strong> ${match.major || "N/A"}</p>
         <p><strong>Availability:</strong> ${match.availability || "N/A"}</p>
